@@ -56,11 +56,7 @@ RUN mkdir -p /var/nagios/rw && ln -s /omd/sites/$check_mk_site/tmp/run/nagios.cm
 RUN sed -i  "s/TRUE/FALSE/" /opt/omd/sites/$check_mk_site/etc/pnp4nagios/config.php
 RUN sed -e "s|RRD_HEARTBEAT = 8460|RRD_HEARTBEAT = 25200|g" \
         -i /opt/omd/sites/$check_mk_site/etc/pnp4nagios/process_perfdata.cfg
-
-# python env
-RUN echo 'export PYTHONPATH=/usr/lib/python2.7/site-packages/:/usr/lib64/python2.7/site-packages' \
-    >> /opt/omd/sites/$check_mk_site/.profile
-    
+  
 # httpd ssl auth config
 RUN rm -f /etc/httpd/conf.d/zzz_omd.conf
 COPY ./config/ssl.conf /etc/httpd/conf.d/ssl.conf
