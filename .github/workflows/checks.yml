@@ -1,0 +1,42 @@
+name: Checks
+
+on:
+  pull_request:
+    branches: [ main ]
+  push:
+    branches: [ main ]
+
+permissions:
+  contents: read
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    container: almalinux:9
+    steps:
+      - name: Install tools
+        run: dnf -y -q install git python3
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: CheckMK configuration parses
+        # global.mk is read by CheckMK as Python; a syntax error breaks the whole site
+        run: python3 -c 'import ast, sys; ast.parse(open(sys.argv[1]).read(), sys.argv[1])' config/global.mk
+
+      - name: Cron files are well formed
+        # five time fields then a command (cron.d files also name the user); catches lost fields and stray wraps
+        run: |
+          python3 - <<'PY'
+          import sys
+          bad = []
+          for path, user in (("config/ncgx.cron", False), ("config/etf.cron", True)):
+              for n, line in enumerate(open(path), 1):
+                  line = line.strip()
+                  if not line or line.startswith("#") or "=" in line.split()[0]:
+                      continue
+                  if len(line.split()) < (7 if user else 6):
+                      bad.append("%s:%d: %s" % (path, n, line))
+          print("\n".join(bad) or "cron files OK")
+          sys.exit(1 if bad else 0)
+          PY
