@@ -1,4 +1,5 @@
-FROM almalinux/9-base:latest
+# pinned: change it in a PR, together with a new release (see RELEASING.md)
+FROM almalinux/9-base:9.9-20261116
 
 ARG check_mk_version="2.3.0p52"
 ARG check_mk_package="check-mk-raw-${check_mk_version}-el9-38.x86_64.rpm"
